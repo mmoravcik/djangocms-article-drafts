@@ -3,6 +3,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.utils import timezone
 
 from cms.exceptions import PublicIsUnmodifiable
 from cms.signals import post_publish
@@ -21,6 +22,7 @@ class Publishable(models.Model):
     draft_object = GenericForeignKey('content_type', 'draft_object_id')
     published_object = GenericForeignKey('content_type', 'published_object_id')
     is_draft = models.BooleanField(default=True)
+    published_at = models.DateTimeField(null=True, blank=True)
 
     """ draft_object_id @todo: track the draft
     to which a published record relates """
@@ -102,6 +104,7 @@ class PublishPool(object):
         # @todo: Parler? Do we need it? Why is it not part of the CMS already?
 
         publishable.is_draft = False
+        publishable.published_at = timezone.now()
         publishable.save()
         return True
 
