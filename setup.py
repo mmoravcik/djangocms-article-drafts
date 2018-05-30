@@ -27,5 +27,5 @@ setup(
     author_email='info@divio.ch',
     url='http://github.com/foo/djangocms-article-drafts',
     license='BSD',
-    test_suite='tests.settings.run',
+    test_suite='djangocms_article_drafts.tests.settings.run',
 )
