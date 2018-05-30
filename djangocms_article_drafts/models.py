@@ -8,6 +8,8 @@ from cms.exceptions import PublicIsUnmodifiable
 from cms.signals import post_publish
 import importlib
 
+from djangocms_article_drafts.utils import copy_object
+
 
 class Publishable(models.Model):
     """Abstract model to represent a publishable CMS node e.g. Page, Article.
@@ -18,10 +20,13 @@ class Publishable(models.Model):
     content_type = models.ForeignKey(ContentType)
     draft_object_id = models.PositiveIntegerField()
     published_object_id = models.PositiveIntegerField(null=True)
+
     draft_object = GenericForeignKey('content_type', 'draft_object_id')
     published_object = GenericForeignKey('content_type', 'published_object_id')
+
     is_draft = models.BooleanField(default=True)
     is_published = models.BooleanField(default=False)
+
 
     """ draft_object_id @todo: track the draft
     to which a published record relates """
@@ -85,9 +90,7 @@ class PublishPool(object):
 
         # Do we need to look for a matching published record?
         # If there is no published version yet. Create one.
-            # NB: the existing publisher app has two attributes: is_draft_version and is_published_version, which seems like a redundancy
-
-        # set is_draft = false
+        # NB: the existing publisher app has two attributes: is_draft_version and is_published_version, which seems like a redundancy
 
         # save publishable.draft_id foreign key
 
@@ -105,6 +108,17 @@ class PublishPool(object):
 
 
         # @todo: Parler? Do we need it? Why is it not part of the CMS already?
+
+        published_object = publishable.published_object
+        if not published_object:
+            # If we don't have the published_object yet, lets create it
+            published_object = publishable.draft_object
+            published_object.pk = None
+            published_object.save()
+
+        copy_object(publishable.draft_object, published_object)
+
+        publishable.published_object = published_object
 
         publishable.is_draft = False
         publishable.save()

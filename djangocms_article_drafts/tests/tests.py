@@ -1,5 +1,3 @@
-from unittest.mock import MagicMock
-
 from django.test import TestCase
 
 from cms.exceptions import PublicIsUnmodifiable
@@ -7,7 +5,6 @@ from cms.signals import post_publish
 
 from djangocms_article_drafts.models import Publishable, PublishPool, publishable_pool
 from djangocms_article_drafts.test_project.models import ArticleTest, UnregisteredModel
-from djangocms_article_drafts.exceptions import UnregisteredModelError
 
 
 class GenericPublishingTestCase(TestCase):
@@ -41,8 +38,7 @@ class GenericPublishingTestCase(TestCase):
         publishable = Publishable.objects.get(draft_object_id=article.id)
         self.assertFalse(publishable.is_draft)
         
-    def _test_publish_signal_assigned_published_object_id(self):
-        # TODO: Implement copying to pass test.
+    def test_publish_signal_assigned_published_object_id(self):
         article = ArticleTest()
         article.save()
         post_publish.send(ArticleTest, instance=article)
